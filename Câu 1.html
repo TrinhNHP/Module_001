@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bài 1</title>
+</head>
+<body>
+<script>
+    let n = prompt("Hãy nhập số lượng phần tử của mảng (lưu ý: n <= 50)");
+    n = parseInt(n);
+
+    if (n > 0 && n <= 50) {
+        let arr = [];
+
+        for (let i = 0; i < n; i++) {
+            arr[i] = parseInt(prompt("Hãy nhập phần tử thứ " + (i + 1) + ":"));
+        }
+
+        document.write("Mảng: [" + arr.join(", ") + "]<br>");
+
+        let sum = 0;
+        let count = 0;
+        let result;
+
+        for (let i = 0; i < arr.length; i++) {
+            if (i % 2 === 0 && arr[i] % 2 !== 0) {
+                sum += arr[i];
+                count++;
+            }
+        }
+
+        if (count > 0) {
+            result = sum / count;
+        } else {
+            result = "Không có số lẻ ở vị trí chẵn.";
+        }
+
+        document.write("Trung bình cộng các số lẻ ở vị trí chẵn: " + result);
+    } else {
+        document.write("Số lượng phần tử không hợp lệ. Vui lòng nhập n > 0 và <= 50.");
+    }
+
+</script>
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lí sách</title>
+    <style>
+        #thu-vien-header {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            background-color: #ffe6f0;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px #ffb6c1;
+        }
+
+        #thu-vien-header h1 {
+            color: #cc0066;
+            margin: 0;
+        }
+
+        #thu-vien-header p {
+            color: #ff3399;
+            font-style: italic;
+            margin: 5px 0 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fff0f5;
+            text-align: center;
+            padding: 30px;
+        }
+
+        h2 {
+            color: #c71585;
+            margin-bottom: 20px;
+        }
+
+        table {
+            margin: 0 auto;
+            width: 80%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(199, 21, 133, 0.2);
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #c71585;
+            text-align: center;
+        }
+
+        th {
+            background-color: #ffc0cb;
+            color: #800040;
+        }
+
+        tr:nth-child(even) {
+            background-color: #ffe4e1;
+        }
+
+        tr:hover {
+            background-color: #fddde6;
+        }
+
+        button {
+            margin: 10px 5px;
+            padding: 10px 15px;
+            background-color: #ff69b4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #ff1493;
+        }
+    </style>
+</head>
+<body>
+<div id="thu-vien-header">
+    <h1>Thư viện: FORGET ME NOT</h1>
+</div>
+<h2>Quản lí sách</h2>
+
+<table id="bookTable">
+    <thead>
+    <tr>
+        <th>Mã số sách</th>
+        <th>Tên sách</th>
+        <th>Năm xuất bản</th>
+        <th>Số quyển</th>
+        <th>Tình trạng</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<br>
+<button onclick="themSachDaCo()">Thêm sách đã có</button>
+<button onclick="themSachMoi()">Thêm sách mới</button>
+<button onclick="muonSach()">Mượn sách</button>
+<button onclick="hienThiSachNhieuNhat()">Hiển thị sách nhiều nhất</button>
+<button onclick="suaSach()">Chỉnh sửa</button>
+
+
+<script>
+    let danhSach = JSON.parse(localStorage.getItem("danhSach")) || [];
+
+    function luuLocal() {
+        localStorage.setItem("danhSach", JSON.stringify(danhSach));
+    }
+
+    function capNhatBang() {
+        const tbody = document.querySelector("#bookTable tbody");
+        tbody.innerHTML = "";
+        danhSach.forEach(book => {
+            const row = `<tr>
+          <td>${book.ma}</td>
+          <td>${book.ten}</td>
+          <td>${book.nam}</td>
+          <td>${book.soQuyen}</td>
+          <td>${book.soQuyen > 0}</td>
+        </tr>`;
+            tbody.innerHTML += row;
+        });
+    }
+
+    function validateMa(ma) {
+        return /^[1-5][0-9]{4}$/.test(ma);
+    }
+
+    function validateNam(nam) {
+        return /^[0-9]{4}$/.test(nam);
+    }
+
+    function themSachMoi() {
+        let ma, ten, nam, soQuyen;
+
+        do {
+            ma = prompt("Nhập mã sách mới (5 chữ số, bắt đầu từ 1-5):");
+        } while (!validateMa(ma) || timSachTheoMa(ma));
+
+        ten = prompt("Nhập tên sách:");
+        do {
+            nam = prompt("Nhập năm xuất bản (4 chữ số):");
+        } while (!validateNam(nam));
+        do {
+            soQuyen = parseInt(prompt("Nhập số quyển:"));
+        } while (isNaN(soQuyen) || soQuyen < 0);
+
+        danhSach.push({ ma, ten, nam: parseInt(nam), soQuyen: parseInt(soQuyen) });
+        luuLocal();
+        capNhatBang();
+        alert("Đã thêm sách mới.");
+    }
+
+    function themSachDaCo() {
+        const ma = prompt("Nhập mã sách muốn thêm:");
+        const sach = timSachTheoMa(ma);
+        if (sach) {
+            let them = parseInt(prompt("Nhập số lượng muốn thêm:"));
+            if (!isNaN(them) && them > 0) {
+                sach.soQuyen += them;
+                luuLocal();
+                capNhatBang();
+                alert("Đã thêm quyển sách.");
+            }
+        } else {
+            alert("Không tìm thấy sách.");
+        }
+    }
+
+    function muonSach() {
+        const ma = prompt("Nhập mã sách muốn mượn:");
+        const sach = timSachTheoMa(ma);
+        if (sach) {
+            if (sach.soQuyen > 0) {
+                sach.soQuyen--;
+                luuLocal();
+                capNhatBang();
+                alert("Đã mượn 1 quyển.");
+            } else {
+                alert("Sách đã được mượn hết.");
+            }
+        } else {
+            alert("Không tìm thấy sách.");
+        }
+    }
+
+    function hienThiSachNhieuNhat() {
+        if (danhSach.length === 0) {
+            alert("Không có sách.");
+            return;
+        }
+
+        let max = Math.max(...danhSach.map(s => s.soQuyen));
+        let nhieuNhat = danhSach.filter(s => s.soQuyen === max);
+        let tenSach = nhieuNhat.map(s => s.ten).join(", ");
+        alert("Sách có nhiều quyển nhất: " + tenSach + " (" + max + " quyển)");
+    }
+
+    function timSachTheoMa(ma) {
+        return danhSach.find(s => s.ma === ma);
+    }
+    function suaSach() {
+        let maCanSua = prompt("Nhập mã sách cần sửa:");
+        let sach = timSachTheoMa(maCanSua);
+
+        if (!sach) {
+            alert("Không tìm thấy sách có mã này.");
+            return;
+        }
+
+        let tenMoi = prompt("Nhập tên sách mới (để trống nếu không đổi):", sach.ten);
+        if (tenMoi !== null && tenMoi.trim() !== "") {
+            sach.ten = tenMoi.trim();
+        }
+
+        let namMoi = prompt("Nhập năm xuất bản mới (4 số, để trống nếu không đổi):", sach.nam);
+        if (namMoi !== null && namMoi.trim() !== "" && validateNam(namMoi)) {
+            sach.nam = parseInt(namMoi);
+        }
+
+        let soQuyenMoi = prompt("Nhập số quyển mới (>=0, để trống nếu không đổi):", sach.soQuyen);
+        if (soQuyenMoi !== null && soQuyenMoi.trim() !== "" && !isNaN(soQuyenMoi) && parseInt(soQuyenMoi) >= 0) {
+            sach.soQuyen = parseInt(soQuyenMoi);
+            sach.tinhTrang = sach.soQuyen > 0;
+        }
+
+        luuLocal();
+        capNhatBang();
+        alert("Đã cập nhật thông tin sách.");
+    }
+
+    capNhatBang();
+</script>
+</body>
+</html>
